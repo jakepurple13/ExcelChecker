@@ -1,3 +1,4 @@
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -9,12 +10,13 @@ public class Student {
 	public Student(String name) {
 
 		this.name = name;
+		time = new ArrayList<Times>();
 
 	}
 
-	public void addTime(Date timeIn, Date timeOut) {
+	public void addTime(String day, LocalTime timeIn, LocalTime timeOut) {
 
-		String day = getDay(timeIn.getDay());
+		//String day = getDay(timeIn.getDay());
 
 		time.add(new Times(day, timeIn, timeOut));
 	}
@@ -49,5 +51,18 @@ public class Student {
 		}
 
 	}
+	
+	@Override
+	public String toString() {
+		
+		String info = name;
+		
+		for(Times t : time) {
+			info += "\t" + t;
+		}
+		
+		return info;
+	}
+	
 
 }

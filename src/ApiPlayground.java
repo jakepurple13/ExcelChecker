@@ -4,11 +4,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -32,57 +38,16 @@ public class ApiPlayground {
 	final static int timeIn = 5;
 	final static int timeOut = 6;
 
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws EncryptedDocumentException,
 			InvalidFormatException, IOException, ParseException {
 		// TODO Auto-generated method stub
 
 		// READS WORKBOOK THAT HAS EXACT TIME DETAIL
 
-		Workbook wb = WorkbookFactory.create(new File(
-				"EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx"));
-		// InputStream inp = new
-		// FileInputStream("EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx");
-		// InputStream inp = new FileInputStream("workbook.xlsx");
-
-		// Workbook wb = WorkbookFactory.create(inp);
-		Sheet sheet = wb.getSheet("Spans");
-
-		// System.out.println(sheet.getSheetName());
-
 		ArrayList<Employee> ale = new ArrayList<Employee>();
-
-		for (int rows = 5; rows < sheet.getLastRowNum(); rows++) {
-
-			Date in = null;
-			Date out = null;
-			String named = "";
-
-			Row r = sheet.getRow(rows);
-
-			named = r.getCell(name).getStringCellValue();
-			// in = r.getCell(timeIn).getDateCellValue();
-			// out = r.getCell(timeOut).getDateCellValue();
-
-			String a = r.getCell(timeIn).toString();
-			String c = r.getCell(timeOut).toString();
-
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm");
-
-			in = sdf.parse(a);
-			out = sdf.parse(c);
-
-			// System.out.println(named + "\t" + a + "\t" + c + "\t" + in);
-
-			Employee e = new Employee(in, out, named);
-
-			// System.out.println(e);
-
-			ale.add(e);
-		}
-
-		System.err.println("------------");
-
-		// -----------------------------------q
+		
+		HashMap<String, Student> hmss = new HashMap<String, Student>();
 
 		// READS SCHEDULE WORKBOOK
 
@@ -100,6 +65,8 @@ public class ApiPlayground {
 			if (named.equals("")) {
 				break;
 			}
+			
+			
 
 			String day = r.getCell(1).toString();
 			String startTime;
@@ -107,8 +74,7 @@ public class ApiPlayground {
 
 			// System.err.println(named + "\t" + day + "\t" + startTime + "\t" +
 			// endTime);
-
-			String q;
+			
 			Cell two = r.getCell(2);
 			Cell three = r.getCell(3);
 
@@ -123,12 +89,71 @@ public class ApiPlayground {
 			} else {
 				endTime = String.valueOf((int) (three.getNumericCellValue()));
 			}
-
-			WantedTimed wt = new WantedTimed(day, startTime, endTime);
-			// System.out.println(wt);
-			// ale.get(i-1).setWantedTimed(day, startTime, endTime);
-			ale.get(i - 1).setWanted(wt);
+			
+			System.out.println(startTime);
+			
+			DateTimeFormatter parseFormat = new DateTimeFormatterBuilder().appendPattern("h:mm:ss a").toFormatter();
+			//LocalTime localTime = LocalTime.parse(timeValue, parseFormat);
+			
+			LocalTime start = LocalTime.parse(startTime, parseFormat);
+			LocalTime end = LocalTime.parse(endTime, parseFormat);
+			
+			
+			if(hmss.containsKey(named)) {
+				hmss.get(named).addTime(day, start, end);
+			} else {
+				Student s = new Student(named);
+				hmss.put(named, s);
+				hmss.get(named).addTime(day, start, end);
+			}
 		}
+		
+		System.out.println(hmss.values());
+		System.out.println(hmss.keySet());
+		
+		/*
+		 * Workbook wb = WorkbookFactory.create(new File(
+		 * "EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx")); // InputStream inp
+		 * = new //
+		 * FileInputStream("EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx"); //
+		 * InputStream inp = new FileInputStream("workbook.xlsx");
+		 * 
+		 * // Workbook wb = WorkbookFactory.create(inp); Sheet sheet =
+		 * wb.getSheet("Spans");
+		 * 
+		 * // System.out.println(sheet.getSheetName());
+		 * 
+		 * 
+		 * 
+		 * for (int rows = 5; rows < sheet.getLastRowNum(); rows++) {
+		 * 
+		 * Date in = null; Date out = null; String named = "";
+		 * 
+		 * Row r = sheet.getRow(rows);
+		 * 
+		 * named = r.getCell(name).getStringCellValue(); // in =
+		 * r.getCell(timeIn).getDateCellValue(); // out =
+		 * r.getCell(timeOut).getDateCellValue();
+		 * 
+		 * String a = r.getCell(timeIn).toString(); String c =
+		 * r.getCell(timeOut).toString();
+		 * 
+		 * SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+		 * 
+		 * in = sdf.parse(a); out = sdf.parse(c);
+		 * 
+		 * // System.out.println(named + "\t" + a + "\t" + c + "\t" + in);
+		 * 
+		 * Employee e = new Employee(in, out, named);
+		 * 
+		 * // System.out.println(e);
+		 * 
+		 * ale.add(e); }
+		 * 
+		 * System.err.println("------------");
+		 * 
+		 * // -----------------------------------q
+		 */
 
 		for (int i = 0; i < ale.size(); i++) {
 			System.out.println(ale.get(i));

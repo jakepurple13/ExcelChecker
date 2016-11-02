@@ -1,17 +1,25 @@
+import java.time.LocalTime;
 import java.util.Date;
 
 public class Times {
 
 	String dayOfWeek;
-	Date timeIn;
-	Date timeOut;
+	LocalTime timeIn;
+	LocalTime timeOut;
 
-	public Times(String day, Date timeIn, Date timeOut) {
+	public Times(String day, LocalTime timeIn, LocalTime timeOut) {
 		
 		dayOfWeek = day;
 		this.timeIn = timeIn;
 		this.timeOut = timeOut;
 		
 	}
+	
+	
+	@Override
+	public String toString() {
+		return dayOfWeek + " Start: " + timeIn + " End: " + timeOut; 
+	}
+	
 
 }
