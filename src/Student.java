@@ -53,6 +53,11 @@ public class Student {
 		
 		
 	}
+	
+	public ArrayList<Times> getTime() {
+		return time;
+	}
+	
 
 	private String getDay(int day) {
 
