@@ -16,6 +16,10 @@ public class Times {
 	}
 	
 	
+	/*public boolean equals() {
+		
+	}*/
+	
 	@Override
 	public String toString() {
 		return dayOfWeek + " Start: " + timeIn + " End: " + timeOut; 

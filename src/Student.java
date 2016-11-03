@@ -1,4 +1,8 @@
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -19,6 +23,35 @@ public class Student {
 		//String day = getDay(timeIn.getDay());
 
 		time.add(new Times(day, timeIn, timeOut));
+	}
+	
+	public int checkTime(Date timed) {
+		
+		Times t = new Times("Fri", LocalTime.MIN, LocalTime.MAX);
+		
+		for(int i=0;i<time.size();i++) {
+			String day = getDay(timed.getDay());
+			
+			if(time.get(i).dayOfWeek.equals(day)) {
+				t = time.get(i);
+				break;
+			}
+		}
+			
+		Date date = timed;
+		DateFormat formatter = new SimpleDateFormat("HH:mm:ss a");
+		String startCheck = formatter.format(date);
+		
+		DateTimeFormatter parseFormat = new DateTimeFormatterBuilder()
+		.appendPattern("hh:mm:ss a").toFormatter();
+
+		LocalTime started = LocalTime.parse(startCheck, parseFormat);
+		
+		System.out.println(started);
+		
+		return t.timeIn.getMinute()-started.getMinute();
+		
+		
 	}
 
 	private String getDay(int day) {
