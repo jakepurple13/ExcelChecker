@@ -1,4 +1,3 @@
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -16,6 +15,10 @@ import javax.swing.JLabel;
 
 public class ExcelGUI extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 
 	/**
@@ -132,8 +135,11 @@ public class ExcelGUI extends JFrame {
 				// TODO Auto-generated method stub
 				JFileChooser chooser = new JFileChooser();
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
-						"Excel file", "xlsx");
+						"Excel", "xlsx", "xls");
 				chooser.setFileFilter(filter);
+				chooser.addChoosableFileFilter(filter);
+				chooser.setAcceptAllFileFilterUsed(true);
+				chooser.setDragEnabled(true);
 				chooser.setCurrentDirectory(new File(System
 						.getProperty("user.home"), "Desktop"));
 				int returnVal = chooser.showSaveDialog(contentPane);
@@ -172,8 +178,6 @@ public class ExcelGUI extends JFrame {
 	public void isEverythingGood() {
 		if (real && output) {
 			btnBegin.setEnabled(true);
-		} else {
-			contentPane.setBackground(Color.RED);
 		}
 	}
 

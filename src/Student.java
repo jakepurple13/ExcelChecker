@@ -1,24 +1,24 @@
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class Student {
 
 	ArrayList<Times> time;
 	String name;
+	HashMap<String, Times> workTime;
 
 	public Student(String name) {
 
 		this.name = name;
 		time = new ArrayList<Times>();
-
+		workTime = new HashMap<>();
+		
 	}
 
 	public void addTime(String day, LocalTime timeIn, LocalTime timeOut) {
@@ -26,8 +26,10 @@ public class Student {
 		// String day = getDay(timeIn.getDay());
 
 		time.add(new Times(day, timeIn, timeOut));
+		workTime.put(day, new Times(day, timeIn, timeOut));
 	}
 
+	@SuppressWarnings("deprecation")
 	public double checkTime(Date timed) {
 
 		Times t = new Times("Fri", LocalTime.MIN, LocalTime.MAX);
@@ -70,6 +72,10 @@ public class Student {
 
 	public ArrayList<Times> getTime() {
 		return time;
+	}
+	
+	public Times getDay(Date date) {
+		return workTime.get(getDay(date.getDay()));
 	}
 
 	private String getDay(int day) {

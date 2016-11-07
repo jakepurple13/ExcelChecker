@@ -34,7 +34,7 @@ public class ExcelMethods {
 	final int TIMEOUT = 6;
 
 	final int DAY = 1;
-	final int STARTTIME = 2;
+	final int STARTTIME =  2;
 	final int ENDTIME = 3;
 
 	HashMap<String, Student> hmss;
@@ -42,18 +42,21 @@ public class ExcelMethods {
 	ArrayList<String> timing;
 	ArrayList<Date> starting;
 	ArrayList<Date> ending;
-	ArrayList<WorkTime> alwt;
+	ArrayList<WorkTime> workTime;
 
 	String timeReadInName = "schedules_on_kronos_201670.xls";
 	String realReadInName = "EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx";
+	
+	ArrayList<String> name = new ArrayList<String>();
 
 	public ExcelMethods() {
+
 		hmss = new HashMap<String, Student>();
 		badThings = new ArrayList<Exception>();
 		timing = new ArrayList<String>();
 		starting = new ArrayList<Date>();
 		ending = new ArrayList<Date>();
-		alwt = new ArrayList<WorkTime>();
+		workTime = new ArrayList<WorkTime>();
 
 		// READS SCHEDULE WORKBOOK
 		// suspectedTimeReadIn(timeReadInName);
@@ -65,14 +68,14 @@ public class ExcelMethods {
 			System.err.println(s);
 		}
 
-		System.out.println("------------");
+		// System.out.println("------------");
 
 		// -----------------------------------
 
 		// READS WORKBOOK THAT HAS EXACT TIME DETAIL
 		// actualReadIn(realReadInName);
 
-		System.err.println("------------");
+		// System.err.println("------------");
 
 		// ------------------------------
 
@@ -210,11 +213,13 @@ public class ExcelMethods {
 				timing.add("Start change: " + s.checkTime(in) + " minutes"
 						+ "\tEnd change: " + s.checkTime(out) + " minutes");
 
-				alwt.add(new WorkTime(s.checkTime(in), s.checkTime(out)));
+				workTime.add(new WorkTime(s.checkTime(in), s.checkTime(out)));
 
 				starting.add(in);
 				ending.add(out);
-
+				
+				name.add(named);
+				
 			} else {
 				badThings.add(new MissingPersonException(named));
 			}
@@ -277,7 +282,7 @@ public class ExcelMethods {
 			for (j = 0; j < alt.size(); j++) {
 
 				count++;
-
+				
 				System.out.println("Name: " + als.get(i).name + "\tData: "
 						+ alt.get(j) + "\tsize: " + alt.size() + "\ti: " + i
 						+ "\tj: " + j + "\tcount: " + count);
@@ -299,10 +304,11 @@ public class ExcelMethods {
 				endingTimeCell.setCellValue(ending.get(count - 1).toString());
 
 				Cell inDifferenceCell = row.createCell(4);
-				inDifferenceCell.setCellValue(alwt.get(count - 1).getIn());
+				inDifferenceCell.setCellValue(workTime.get(count - 1).getIn());
 
 				Cell outDifferenceCell = row.createCell(5);
-				outDifferenceCell.setCellValue(alwt.get(count - 1).getOut());
+				outDifferenceCell
+						.setCellValue(workTime.get(count - 1).getOut());
 
 				// count++;
 
@@ -341,7 +347,52 @@ public class ExcelMethods {
 			cell.setCellValue(badThings.get(i).getMessage());
 
 		}
+		
+		Sheet allTime = flagged.createSheet("Times");
 
+		for (int i = 0; i < starting.size(); i++) {
+
+			// Create a row and put some cells in it. Rows are 0 based.
+			Row row = allTime.createRow(i);
+			// Create a cell and put a value in it.
+			Cell nameCell = row.createCell(0);
+			nameCell.setCellValue(name.get(i));
+			
+			Cell startingCell = row.createCell(1);
+			startingCell.setCellValue(starting.get(i).toString());
+			
+			Cell endingCell = row.createCell(2);
+			endingCell.setCellValue(ending.get(i).toString());
+			
+			Cell workTimeInCell = row.createCell(3);
+			workTimeInCell.setCellValue(workTime.get(i).getIn());
+			
+			Cell workTimeOutCell = row.createCell(4);
+			workTimeOutCell.setCellValue(workTime.get(i).getOut());
+			
+			Cell tester = row.createCell(5);
+			tester.setCellValue(hmss.get(name.get(i)).getDay(starting.get(i)).toString());
+
+		}
+		
+		SheetConditionalFormatting sheetAT = allTime
+				.getSheetConditionalFormatting();
+		ConditionalFormattingRule rule2 = sheetAT
+				.createConditionalFormattingRule(ComparisonOperator.GT, "10");
+		PatternFormatting fill2 = rule2.createPatternFormatting();
+		fill2.setFillBackgroundColor(IndexedColors.RED.index);
+		fill2.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+
+		CellRangeAddress[] regions1 = { CellRangeAddress.valueOf("D1:E1000") };
+
+		sheetAT.addConditionalFormatting(regions1, rule2);
+
+		allTime.autoSizeColumn(0);
+		allTime.autoSizeColumn(1);
+		allTime.autoSizeColumn(2);
+		allTime.autoSizeColumn(3);
+		allTime.autoSizeColumn(4);
+		
 		// File desktop = new File(System.getProperty("user.home"), "Desktop");
 		// Write the output to a file
 		/*

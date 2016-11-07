@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" output="target/classes" path="src">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="/Users/Jacob/Downloads/poi-3.15/poi-3.15.jar"/>
 	<classpathentry kind="lib" path="/Users/Jacob/Downloads/poi-3.15/poi-ooxml-3.15.jar"/>
 	<classpathentry kind="lib" path="/Users/Jacob/Downloads/poi-3.15/poi-ooxml-schemas-3.15.jar"/>
@@ -10,5 +19,9 @@
 	<classpathentry kind="lib" path="/Users/Jacob/Downloads/poi-3.15/ooxml-lib/xmlbeans-2.6.0.jar"/>
 	<classpathentry kind="lib" path="/Users/Jacob/Downloads/poi-3.15/ooxml-lib/curvesapi-1.04.jar"/>
 	<classpathentry kind="lib" path="/Users/Jacob/Downloads/poi-3.15/lib/commons-collections4-4.1.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/sheets-v4r34lv1.21.0"/>
+	<classpathentry kind="lib" path="/Users/Jacob/Downloads/google-oauth-java-client 3/libs/jetty-6.1.26.jar"/>
+	<classpathentry kind="lib" path="/Users/Jacob/Downloads/google-oauth-java-client 3/libs/jetty-util-6.1.26.jar"/>
+	<classpathentry kind="con" path="com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/oauth2-v2r122lv1.21.0"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
