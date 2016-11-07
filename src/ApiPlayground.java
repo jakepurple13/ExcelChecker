@@ -1,39 +1,29 @@
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Time;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.ComparisonOperator;
+import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.PatternFormatting;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ApiPlayground {
@@ -49,8 +39,10 @@ public class ApiPlayground {
 	static HashMap<String, Student> hmss;
 	static ArrayList<Exception> badThings;
 	static ArrayList<String> timing;
+	static ArrayList<Date> starting;
+	static ArrayList<Date> ending;
+	static ArrayList<WorkTime> alwt;
 
-	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws EncryptedDocumentException,
 			InvalidFormatException, IOException, ParseException {
 		// TODO Auto-generated method stub
@@ -58,9 +50,15 @@ public class ApiPlayground {
 		hmss = new HashMap<String, Student>();
 		badThings = new ArrayList<Exception>();
 		timing = new ArrayList<String>();
-
+		starting = new ArrayList<Date>();
+		ending = new ArrayList<Date>();
+		alwt = new ArrayList<WorkTime>();
+		
+		String timeReadInName = "schedules_on_kronos_201670.xls";
+		String realReadInName = "EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx";
+		
 		// READS SCHEDULE WORKBOOK
-		suspectedTimeReadIn();
+		suspectedTimeReadIn(timeReadInName);
 
 		/*
 		 * System.out.println(hmss.values()); System.out.println(hmss.keySet());
@@ -74,7 +72,7 @@ public class ApiPlayground {
 		// -----------------------------------
 
 		// READS WORKBOOK THAT HAS EXACT TIME DETAIL
-		actualReadIn();
+		actualReadIn(realReadInName);
 
 		System.err.println("------------");
 
@@ -85,10 +83,9 @@ public class ApiPlayground {
 
 	}
 
-	public static void suspectedTimeReadIn() throws EncryptedDocumentException,
+	public static void suspectedTimeReadIn(String fileName) throws EncryptedDocumentException,
 			InvalidFormatException, IOException {
-		Workbook wb1 = WorkbookFactory.create(new File(
-				"schedules_on_kronos_201670.xls"));
+		Workbook wb1 = WorkbookFactory.create(new File(fileName));
 
 		Sheet sheet1 = wb1.getSheet("schedule matches google drive");
 
@@ -145,10 +142,9 @@ public class ApiPlayground {
 		}
 	}
 
-	public static void actualReadIn() throws EncryptedDocumentException,
+	public static void actualReadIn(String fileName) throws EncryptedDocumentException,
 			InvalidFormatException, IOException, ParseException {
-		Workbook wb = WorkbookFactory.create(new File(
-				"EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx"));
+		Workbook wb = WorkbookFactory.create(new File(fileName));
 
 		Sheet sheet = wb.getSheet("Spans");
 
@@ -165,7 +161,7 @@ public class ApiPlayground {
 
 			named = r.getCell(NAME).toString().trim();
 
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 
 			in = sdf.parse(a.toString());
 			out = sdf.parse(c.toString());
@@ -173,12 +169,19 @@ public class ApiPlayground {
 			System.err.println(named + "\t" + in + "\t" + out);
 
 			if (hmss.containsKey(named)) {
+				
 				Student s = hmss.get(named);
 
 				System.out.println(s.toString());
 
 				System.out.println(s.checkTime(in) + "\t" + s.checkTime(out));
-				timing.add(s.checkTime(in) + "\t" + s.checkTime(out));
+				timing.add("Start change: " + s.checkTime(in) + " minutes"
+						+ "\tEnd change: " + s.checkTime(out) + " minutes");
+
+				alwt.add(new WorkTime(s.checkTime(in), s.checkTime(out)));
+				
+				starting.add(in);
+				ending.add(out);
 
 			} else {
 				badThings.add(new MissingPersonException(named));
@@ -190,50 +193,104 @@ public class ApiPlayground {
 	public static void writeOut() throws IOException {
 		// Workbook flagged = new HSSFWorkbook();
 		Workbook flagged = new XSSFWorkbook();
-		CreationHelper createHelper = flagged.getCreationHelper();
+		//CreationHelper createHelper = flagged.getCreationHelper();
 		Sheet flagShip = flagged.createSheet("People who are bad");
-
 		ArrayList<Student> als = new ArrayList<Student>(hmss.values());
 
-		int j=0;
+		Row categories = flagShip.createRow(0);
+
+		Cell cat = categories.createCell(NAME);
+		cat.setCellValue("Name");
+
+		cat = categories.createCell(1);
+		cat.setCellValue("Days of Work");
+
+		cat = categories.createCell(2);
+		cat.setCellValue("Starting Time");
+
+		cat = categories.createCell(3);
+		cat.setCellValue("Ending Time");
+
+		cat = categories.createCell(4);
+		cat.setCellValue("In Difference");
+		
+		cat = categories.createCell(5);
+		cat.setCellValue("Out Difference");
+
+		int j = 0;
 		int count = 0;
 		for (int i = 0; i < als.size(); i++) {
 
-			//System.out.println(als.get(i));
-
+			// System.out.println(als.get(i));
 			ArrayList<Times> alt = als.get(i).getTime();
-
-			//System.err.println(alt.size());
+			
+			System.err.println(count + "\tals size: " + als.size());
 
 			// Create a row and put some cells in it. Rows are 0 based.
-			Row row = flagShip.createRow(i+count);
+			//Row row = flagShip.createRow(count);
+			
 			// Create a cell and put a value in it.
-			Cell cell = row.createCell(0);
-			cell.setCellValue(als.get(i).name);
+			//Cell cell = row.createCell(NAME);
+			//cell.setCellValue(als.get(i).name);
 
 			for (j = 0; j < alt.size(); j++) {
+				
+				count++;
 
-				System.out.println(alt.get(j) + "\ti: " + i + "\tj: " + j + "\tcount: " + count);
+				System.out.println("Name: " + als.get(i).name + 
+						"\tData: " + alt.get(j) + 
+						"\tsize: " + alt.size() + 
+						"\ti: " + i + 
+						"\tj: " + j + 
+						"\tcount: " + count);
+
+				Row row = flagShip.createRow(count);
+				if(j==0) {
+					Cell nameCell = row.createCell(NAME);
+					nameCell.setCellValue(als.get(i).name);
+				}
+
+				Cell daysOfWorkCell = row.createCell(1);
+				daysOfWorkCell.setCellValue(alt.get(j).toString());
+
+				Cell startingTimeCell = row.createCell(2);
+				startingTimeCell.setCellValue(starting.get(count-1).toString());
+
+				Cell endingTimeCell = row.createCell(3);
+				endingTimeCell.setCellValue(ending.get(count-1).toString());
 				
-				row = flagShip.createRow(j + 1);
+				Cell inDifferenceCell = row.createCell(4);
+				inDifferenceCell.setCellValue(alwt.get(count-1).getIn());
 				
-				Cell cell2 = row.createCell(1);
-				cell2.setCellValue(alt.get(j).toString());
+				Cell outDifferenceCell = row.createCell(5);
+				outDifferenceCell.setCellValue(alwt.get(count-1).getOut());
+				
+				//count++;
 
 			}
-
-			//row = flagShip.createRow(i + j + 2);
-
-			//Cell cell1 = row.createCell(2);
-			//cell1.setCellValue(timing.get(i));
-
-			count += j;
-
-			// Or do it on one line. row.createCell(1).setCellValue(1.2);
-
+			
 		}
 
-		flagShip.setFitToPage(true);
+		// auto size columns used to make things look nice
+		flagShip.autoSizeColumn(0);
+		flagShip.autoSizeColumn(1);
+		flagShip.autoSizeColumn(2);
+		flagShip.autoSizeColumn(3);
+		flagShip.autoSizeColumn(4);
+		flagShip.autoSizeColumn(5);
+		
+		
+		SheetConditionalFormatting sheetCF = flagShip.getSheetConditionalFormatting();
+		ConditionalFormattingRule rule1 = sheetCF.createConditionalFormattingRule(ComparisonOperator.GT, "10");
+        PatternFormatting fill1 = rule1.createPatternFormatting();
+        fill1.setFillBackgroundColor(IndexedColors.ROSE.index);
+        fill1.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+        
+        CellRangeAddress[] regions = {
+                CellRangeAddress.valueOf("E2:F82")
+        };
+
+        sheetCF.addConditionalFormatting(regions, rule1);
 
 		Sheet badShip = flagged.createSheet("Exceptions");
 
@@ -247,8 +304,9 @@ public class ApiPlayground {
 
 		}
 
+		File desktop = new File(System.getProperty("user.home"), "Desktop");
 		// Write the output to a file
-		FileOutputStream fileOut = new FileOutputStream("captainslog.xlsx");
+		FileOutputStream fileOut = new FileOutputStream(desktop.getAbsolutePath() + "/captainslog.xlsx");
 		flagged.write(fileOut);
 		fileOut.close();
 		flagged.close();
