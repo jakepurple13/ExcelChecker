@@ -1,7 +1,9 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -11,7 +13,6 @@ import javax.swing.JFileChooser;
 import javax.swing.SpringLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-
 
 public class ExcelGUI extends JFrame {
 
@@ -33,6 +34,13 @@ public class ExcelGUI extends JFrame {
 		});
 	}
 
+	String fileName = "";
+	String outWriteName = "";
+	ExcelMethods em;
+	boolean real = false;
+	boolean output = false;
+	JButton btnBegin;
+
 	/**
 	 * Create the frame.
 	 */
@@ -44,48 +52,129 @@ public class ExcelGUI extends JFrame {
 		setContentPane(contentPane);
 		SpringLayout sl_contentPane = new SpringLayout();
 		contentPane.setLayout(sl_contentPane);
-		
-		JLabel lblNewLabel = new JLabel("New label");
-		sl_contentPane.putConstraint(SpringLayout.EAST, lblNewLabel, -359, SpringLayout.EAST, contentPane);
+
+		JLabel lblNewLabel = new JLabel("Real Time File");
 		contentPane.add(lblNewLabel);
-		
+
 		JButton btnRealTimeFile = new JButton("Real Time File Chooser");
-		sl_contentPane.putConstraint(SpringLayout.NORTH, lblNewLabel, 6, SpringLayout.SOUTH, btnRealTimeFile);
-		sl_contentPane.putConstraint(SpringLayout.WEST, lblNewLabel, 10, SpringLayout.WEST, btnRealTimeFile);
-		sl_contentPane.putConstraint(SpringLayout.NORTH, btnRealTimeFile, 10, SpringLayout.NORTH, contentPane);
-		sl_contentPane.putConstraint(SpringLayout.WEST, btnRealTimeFile, 10, SpringLayout.WEST, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.NORTH, lblNewLabel, 6,
+				SpringLayout.SOUTH, btnRealTimeFile);
+		sl_contentPane.putConstraint(SpringLayout.WEST, lblNewLabel, 10,
+				SpringLayout.WEST, btnRealTimeFile);
+		sl_contentPane.putConstraint(SpringLayout.NORTH, btnRealTimeFile, 10,
+				SpringLayout.NORTH, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.WEST, btnRealTimeFile, 10,
+				SpringLayout.WEST, contentPane);
 		contentPane.add(btnRealTimeFile);
-		
+
 		JButton btnOutputFile = new JButton("Output File");
-		sl_contentPane.putConstraint(SpringLayout.WEST, btnOutputFile, 0, SpringLayout.WEST, lblNewLabel);
-		sl_contentPane.putConstraint(SpringLayout.SOUTH, btnOutputFile, -10, SpringLayout.SOUTH, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.WEST, btnOutputFile, 0,
+				SpringLayout.WEST, btnRealTimeFile);
 		contentPane.add(btnOutputFile);
-		
-		JButton btnBegin = new JButton("Begin");
-		sl_contentPane.putConstraint(SpringLayout.SOUTH, btnBegin, 0, SpringLayout.SOUTH, btnOutputFile);
-		sl_contentPane.putConstraint(SpringLayout.EAST, btnBegin, -10, SpringLayout.EAST, contentPane);
+
+		btnBegin = new JButton("Begin");
+		sl_contentPane.putConstraint(SpringLayout.EAST, lblNewLabel, 0,
+				SpringLayout.EAST, btnBegin);
+		sl_contentPane.putConstraint(SpringLayout.SOUTH, btnBegin, -10,
+				SpringLayout.SOUTH, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.NORTH, btnOutputFile, 0,
+				SpringLayout.NORTH, btnBegin);
+		sl_contentPane.putConstraint(SpringLayout.EAST, btnBegin, -10,
+				SpringLayout.EAST, contentPane);
 		contentPane.add(btnBegin);
-		
-		
+
+		JLabel lblOutput = new JLabel("Output");
+		sl_contentPane.putConstraint(SpringLayout.WEST, lblOutput, 20,
+				SpringLayout.WEST, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.SOUTH, lblOutput, -6,
+				SpringLayout.NORTH, btnOutputFile);
+		sl_contentPane.putConstraint(SpringLayout.EAST, lblOutput, 0,
+				SpringLayout.EAST, lblNewLabel);
+		contentPane.add(lblOutput);
+
+		em = new ExcelMethods();
+
+		btnBegin.setEnabled(false);
+
 		btnRealTimeFile.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				JFileChooser chooser = new JFileChooser();
-			    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-			        "Excel Images", "xlsx");
-			    chooser.setFileFilter(filter);
-			    int returnVal = chooser.showOpenDialog(contentPane);
-			    if(returnVal == JFileChooser.APPROVE_OPTION) {
-			       System.out.println("You chose to open this file: " +
-			            chooser.getSelectedFile().getName());
-			    }
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+						"Excel file", "xlsx");
+				chooser.setFileFilter(filter);
+				chooser.setCurrentDirectory(new File(System
+						.getProperty("user.home"), "Downloads"));
+				int returnVal = chooser.showOpenDialog(contentPane);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					System.out.println("You chose to open this file: "
+							+ chooser.getSelectedFile().getAbsolutePath());
+					fileName = chooser.getSelectedFile().getAbsolutePath();
+
+					lblNewLabel.setText(chooser.getSelectedFile()
+							.getAbsolutePath());
+
+					real = true;
+
+				}
+
+				isEverythingGood();
+
 			}
 		});
-		
-		
-		
-		
+
+		btnOutputFile.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				JFileChooser chooser = new JFileChooser();
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+						"Excel file", "xlsx");
+				chooser.setFileFilter(filter);
+				chooser.setCurrentDirectory(new File(System
+						.getProperty("user.home"), "Desktop"));
+				int returnVal = chooser.showSaveDialog(contentPane);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					System.out.println("You chose to open this file: "
+							+ chooser.getSelectedFile().getAbsolutePath()
+							+ ".xlsx");
+					outWriteName = chooser.getSelectedFile().getAbsolutePath()
+							+ ".xlsx";
+
+					lblOutput.setText(chooser.getSelectedFile()
+							.getAbsolutePath() + ".xlsx");
+
+					output = true;
+				}
+
+				isEverythingGood();
+
+			}
+		});
+
+		btnBegin.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				em.actualIn(fileName);
+				em.outWrite(outWriteName);
+
+				contentPane.setBackground(Color.GREEN);
+			}
+		});
+
 	}
+
+	public void isEverythingGood() {
+		if (real && output) {
+			btnBegin.setEnabled(true);
+		} else {
+			contentPane.setBackground(Color.RED);
+		}
+	}
+
 }
