@@ -37,7 +37,7 @@ public class Student {
 		for (int i = 0; i < time.size(); i++) {
 			String day = getDay(timed.getDay());
 
-			if (time.get(i).dayOfWeek.equals(day)) {
+			if (time.get(i).getDay().equals(day)) {
 				t = time.get(i);
 				break;
 			}
@@ -74,7 +74,17 @@ public class Student {
 		return time;
 	}
 	
-	public Times getDay(Date date) {
+	public Times getDays(Date date) {
+		
+		String day = getDay(date.getDay());
+		
+		for(int i=0;i<time.size();i++) {
+			System.out.println(i + ": " + time.get(i));
+			if(day.equals(time.get(i).getDay())) {
+				return time.get(i);
+			}
+		}
+		
 		return workTime.get(getDay(date.getDay()));
 	}
 
@@ -104,7 +114,7 @@ public class Student {
 			return "Sat";
 
 		default:
-			return "";
+			return "Mon";
 		}
 
 	}

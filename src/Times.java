@@ -14,6 +14,10 @@ public class Times {
 		
 	}
 	
+	public String getDay() {
+		return dayOfWeek;
+	}
+	
 	
 	/*public boolean equals() {
 		

@@ -34,7 +34,7 @@ public class ExcelMethods {
 	final int TIMEOUT = 6;
 
 	final int DAY = 1;
-	final int STARTTIME =  2;
+	final int STARTTIME = 2;
 	final int ENDTIME = 3;
 
 	HashMap<String, Student> hmss;
@@ -46,7 +46,7 @@ public class ExcelMethods {
 
 	String timeReadInName = "schedules_on_kronos_201670.xls";
 	String realReadInName = "EmployeeTimeDetail_PayPeriodEnd10-15-16.xlsx";
-	
+
 	ArrayList<String> name = new ArrayList<String>();
 
 	public ExcelMethods() {
@@ -99,8 +99,7 @@ public class ExcelMethods {
 	}
 
 	private void suspectedTimeReadIn(String fileName)
-			throws EncryptedDocumentException, InvalidFormatException,
-			IOException {
+			throws EncryptedDocumentException, InvalidFormatException, IOException {
 		Workbook wb1 = WorkbookFactory.create(new File(fileName));
 
 		Sheet sheet1 = wb1.getSheet("schedule matches google drive");
@@ -142,8 +141,7 @@ public class ExcelMethods {
 				endTime = String.valueOf((int) (three.getNumericCellValue()));
 			}
 
-			parseFormat = new DateTimeFormatterBuilder().appendPattern(
-					"h:mm:ss a").toFormatter();
+			parseFormat = new DateTimeFormatterBuilder().appendPattern("h:mm:ss a").toFormatter();
 
 			start = LocalTime.parse(startTime, parseFormat);
 			end = LocalTime.parse(endTime, parseFormat);
@@ -177,8 +175,7 @@ public class ExcelMethods {
 	}
 
 	private void actualReadIn(String fileName)
-			throws EncryptedDocumentException, InvalidFormatException,
-			IOException, ParseException {
+			throws EncryptedDocumentException, InvalidFormatException, IOException, ParseException {
 		Workbook wb = WorkbookFactory.create(new File(fileName));
 
 		Sheet sheet = wb.getSheet("Spans");
@@ -204,24 +201,24 @@ public class ExcelMethods {
 			System.err.println(named + "\t" + in + "\t" + out);
 
 			if (hmss.containsKey(named)) {
-
+				
 				Student s = hmss.get(named);
 
 				System.out.println(s.toString());
 
 				System.out.println(s.checkTime(in) + "\t" + s.checkTime(out));
-				timing.add("Start change: " + s.checkTime(in) + " minutes"
-						+ "\tEnd change: " + s.checkTime(out) + " minutes");
+				timing.add("Start change: " + s.checkTime(in) + " minutes" + "\tEnd change: " + s.checkTime(out)
+						+ " minutes");
 
 				workTime.add(new WorkTime(s.checkTime(in), s.checkTime(out)));
 
 				starting.add(in);
 				ending.add(out);
-				
+
 				name.add(named);
-				
 			} else {
-				badThings.add(new MissingPersonException(named));
+				new MissingPersonException(named, badThings);
+				// badThings.add(new MissingPersonException(named));
 			}
 
 		}
@@ -282,10 +279,9 @@ public class ExcelMethods {
 			for (j = 0; j < alt.size(); j++) {
 
 				count++;
-				
-				System.out.println("Name: " + als.get(i).name + "\tData: "
-						+ alt.get(j) + "\tsize: " + alt.size() + "\ti: " + i
-						+ "\tj: " + j + "\tcount: " + count);
+
+				System.out.println("Name: " + als.get(i).name + "\tData: " + alt.get(j) + "\tsize: " + alt.size()
+						+ "\ti: " + i + "\tj: " + j + "\tcount: " + count);
 
 				Row row = flagShip.createRow(count);
 				if (j == 0) {
@@ -297,8 +293,7 @@ public class ExcelMethods {
 				daysOfWorkCell.setCellValue(alt.get(j).toString());
 
 				Cell startingTimeCell = row.createCell(2);
-				startingTimeCell.setCellValue(starting.get(count - 1)
-						.toString());
+				startingTimeCell.setCellValue(starting.get(count - 1).toString());
 
 				Cell endingTimeCell = row.createCell(3);
 				endingTimeCell.setCellValue(ending.get(count - 1).toString());
@@ -307,8 +302,7 @@ public class ExcelMethods {
 				inDifferenceCell.setCellValue(workTime.get(count - 1).getIn());
 
 				Cell outDifferenceCell = row.createCell(5);
-				outDifferenceCell
-						.setCellValue(workTime.get(count - 1).getOut());
+				outDifferenceCell.setCellValue(workTime.get(count - 1).getOut());
 
 				// count++;
 
@@ -324,10 +318,8 @@ public class ExcelMethods {
 		flagShip.autoSizeColumn(4);
 		flagShip.autoSizeColumn(5);
 
-		SheetConditionalFormatting sheetCF = flagShip
-				.getSheetConditionalFormatting();
-		ConditionalFormattingRule rule1 = sheetCF
-				.createConditionalFormattingRule(ComparisonOperator.GT, "10");
+		SheetConditionalFormatting sheetCF = flagShip.getSheetConditionalFormatting();
+		ConditionalFormattingRule rule1 = sheetCF.createConditionalFormattingRule(ComparisonOperator.GT, "10");
 		PatternFormatting fill1 = rule1.createPatternFormatting();
 		fill1.setFillBackgroundColor(IndexedColors.ROSE.index);
 		fill1.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
@@ -336,49 +328,53 @@ public class ExcelMethods {
 
 		sheetCF.addConditionalFormatting(regions, rule1);
 
-		Sheet badShip = flagged.createSheet("Exceptions");
+		// -------------------------------
 
-		for (int i = 0; i < badThings.size(); i++) {
-
-			// Create a row and put some cells in it. Rows are 0 based.
-			Row row = badShip.createRow(i);
-			// Create a cell and put a value in it.
-			Cell cell = row.createCell(0);
-			cell.setCellValue(badThings.get(i).getMessage());
-
-		}
-		
 		Sheet allTime = flagged.createSheet("Times");
 
 		for (int i = 0; i < starting.size(); i++) {
 
-			// Create a row and put some cells in it. Rows are 0 based.
-			Row row = allTime.createRow(i);
-			// Create a cell and put a value in it.
-			Cell nameCell = row.createCell(0);
-			nameCell.setCellValue(name.get(i));
-			
-			Cell startingCell = row.createCell(1);
-			startingCell.setCellValue(starting.get(i).toString());
-			
-			Cell endingCell = row.createCell(2);
-			endingCell.setCellValue(ending.get(i).toString());
-			
-			Cell workTimeInCell = row.createCell(3);
-			workTimeInCell.setCellValue(workTime.get(i).getIn());
-			
-			Cell workTimeOutCell = row.createCell(4);
-			workTimeOutCell.setCellValue(workTime.get(i).getOut());
-			
-			Cell tester = row.createCell(5);
-			tester.setCellValue(hmss.get(name.get(i)).getDay(starting.get(i)).toString());
+			try {
+
+				// Create a row and put some cells in it. Rows are 0 based.
+				Row row = allTime.createRow(i);
+				// Create a cell and put a value in it.
+				Cell nameCell = row.createCell(0);
+				nameCell.setCellValue(name.get(i));
+
+				Cell startingCell = row.createCell(1);
+				startingCell.setCellValue(starting.get(i).toString());
+
+				Cell endingCell = row.createCell(2);
+				endingCell.setCellValue(ending.get(i).toString());
+
+				Cell workTimeInCell = row.createCell(3);
+				workTimeInCell.setCellValue(workTime.get(i).getIn());
+
+				Cell workTimeOutCell = row.createCell(4);
+				workTimeOutCell.setCellValue(workTime.get(i).getOut());
+
+				Cell tester = row.createCell(5);
+
+				String named = name.get(i);
+				System.out.println(named);
+				Date d = starting.get(i);
+				System.err.println(d.toString());
+				Student s = hmss.get(name.get(i));
+				System.err.println(s);
+				Times t = s.getDays(d);
+				System.out.println(t.toString());
+
+				tester.setCellValue(t.toString());
+
+			} catch (NullPointerException e) {
+				new MissingPersonException(name.get(i) + "\t" + e.toString(), badThings);
+			}
 
 		}
-		
-		SheetConditionalFormatting sheetAT = allTime
-				.getSheetConditionalFormatting();
-		ConditionalFormattingRule rule2 = sheetAT
-				.createConditionalFormattingRule(ComparisonOperator.GT, "10");
+
+		SheetConditionalFormatting sheetAT = allTime.getSheetConditionalFormatting();
+		ConditionalFormattingRule rule2 = sheetAT.createConditionalFormattingRule(ComparisonOperator.GT, "10");
 		PatternFormatting fill2 = rule2.createPatternFormatting();
 		fill2.setFillBackgroundColor(IndexedColors.RED.index);
 		fill2.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
@@ -392,7 +388,24 @@ public class ExcelMethods {
 		allTime.autoSizeColumn(2);
 		allTime.autoSizeColumn(3);
 		allTime.autoSizeColumn(4);
+
+		Sheet badShip = flagged.createSheet("Exceptions");
+
+		for (int i = 0; i < badThings.size(); i++) {
+
+			// Create a row and put some cells in it. Rows are 0 based.
+			Row row = badShip.createRow(i);
+			// Create a cell and put a value in it.
+			Cell cell = row.createCell(0);
+			cell.setCellValue(badThings.get(i).getMessage());
+			//cell = row.createCell(1);
+			//cell.setCellValue(((MissingPersonException) badThings.get(i)).errorMessage);
+
+		}
 		
+		badShip.autoSizeColumn(0);
+		badShip.autoSizeColumn(1);
+
 		// File desktop = new File(System.getProperty("user.home"), "Desktop");
 		// Write the output to a file
 		/*

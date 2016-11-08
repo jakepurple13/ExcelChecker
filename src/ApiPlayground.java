@@ -184,7 +184,8 @@ public class ApiPlayground {
 				ending.add(out);
 
 			} else {
-				badThings.add(new MissingPersonException(named));
+				//new MissingPersonException(named, badThings);
+				//badThings.add(new MissingPersonException(named));
 			}
 
 		}
